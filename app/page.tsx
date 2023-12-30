@@ -5,6 +5,7 @@ import {
   fetchFirstRepositoryContribution,
 } from "@/src/github_api";
 import CustomLineChart from "@/components/CustomLineChart";
+import { OutBoundSvgIcon } from "@/components/OutboundSvgIcon";
 
 async function SummaryLineChart() {
   const summary = await fetchContributionSummary("ramsayleung");
@@ -13,24 +14,49 @@ async function SummaryLineChart() {
   var summaryByYear = await Promise.all(
     contributionYears.map(async (year: String) => {
       let firstDayOfYear = new Date(`${year}-1-1`);
-      const eachSummary = await fetchContributionSummary("ramsayleung", firstDayOfYear);
-      var obj = {}
-      obj[year] = eachSummary
-      return obj
+      const eachSummary = await fetchContributionSummary(
+        "ramsayleung",
+        firstDayOfYear
+      );
+      var obj = {};
+      obj[year] = eachSummary;
+      return obj;
     })
   );
+  // Convert an Array of Object into an Object
   summaryByYear = summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
-  let labels = Object.keys(summaryByYear)
-  let totalCommitContributions = Object.values(summaryByYear).map(data => data.data.user.contributionsCollection.totalCommitContributions)
-  let totalIssueContributions = Object.values(summaryByYear).map(data => data.data.user.contributionsCollection.totalIssueContributions)
-  let totalPullRequestContributions = Object.values(summaryByYear).map(data => data.data.user.contributionsCollection.totalPullRequestContributions)
-  let totalPullRequestReviewContributions = Object.values(summaryByYear).map(data => data.data.user.contributionsCollection.totalPullRequestReviewContributions)
-  console.log(`summaryByYear labels: ${JSON.stringify(labels)}`)
-  console.log(`summaryByYear totalCommitContributions: ${JSON.stringify(totalCommitContributions)}`)
-  console.log(`summaryByYear totalIssueContributions: ${JSON.stringify(totalIssueContributions)}`)
-  console.log(`summaryByYear totalPullRequestContributions: ${JSON.stringify(totalPullRequestContributions)}`)
-  console.log(`summaryByYear: ${JSON.stringify(totalPullRequestReviewContributions)}`)
-  return <CustomLineChart labels = {labels} commits={totalCommitContributions} issues={totalIssueContributions} pullRequests={totalPullRequestContributions} pullRequestReviews={totalPullRequestReviewContributions} />
+  let labels = Object.keys(summaryByYear);
+  let totalCommitContributions = Object.values(summaryByYear).map(
+    (data) =>
+      data?.data?.user?.contributionsCollection?.totalCommitContributions ?? 0
+  );
+  let totalIssueContributions = Object.values(summaryByYear).map(
+    (data) =>
+      data?.data?.user?.contributionsCollection?.totalIssueContributions ?? 0
+  );
+  let totalPullRequestContributions = Object.values(summaryByYear).map(
+    (data) =>
+      data?.data?.user?.contributionsCollection
+        ?.totalPullRequestContributions ?? 0
+  );
+  let totalPullRequestReviewContributions = Object.values(summaryByYear).map(
+    (data) =>
+      data?.data?.user?.contributionsCollection
+        ?.totalPullRequestReviewContributions ?? 0
+  );
+  return (
+    <div className="flex justify-center">
+      <div className="basic-1/2 w-96">
+        <CustomLineChart
+          labels={labels}
+          commits={totalCommitContributions}
+          issues={totalIssueContributions}
+          pullRequests={totalPullRequestContributions}
+          pullRequestReviews={totalPullRequestReviewContributions}
+        />
+      </div>
+    </div>
+  );
 }
 
 async function FirstRepository() {
@@ -50,19 +76,19 @@ async function FirstRepository() {
     .slice(0, 10);
   return (
     <div className="flex justify-center text-center my-4">
-      <div className="text-xs sm:text-base pr-3 sm:px-4 border-r">
-        <p className="text-[10px] sm:text-xs text-gray-500">
-          First Repository on Github
-        </p>
+      <div className="pr-3 sm:px-4">
+        <p className=" text-gray-500 capitalize">First Repository</p>
         <a
           href={firstRepositoryContribution.repository.url}
-          className="text-blue-600 visited:text-green-600"
+          target="_blank"
+          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
         >
           {firstRepositoryContribution.repository.name}
+          <OutBoundSvgIcon />
         </a>
       </div>
-      <div className="text-xs sm:text-base px-3 sm:px-4 border-l">
-        <p className="text-[10px] sm:text-xs text-gray-500">on </p>
+      <div className="px-3 sm:px-4">
+        <p className="text-gray-500">on </p>
         <p>{firstIssueCreateDate}</p>
       </div>
     </div>
@@ -87,29 +113,31 @@ async function FirstPullRequest() {
     .slice(0, 10);
   return (
     <div className="flex justify-center text-center my-4">
-      <div className="text-xs sm:text-base pr-3 sm:px-4 border-r">
-        <p className="text-[10px] sm:text-xs text-gray-500">
-          First Pull Request on Github
-        </p>
+      <div className="pr-3 sm:px-4">
+        <p className=" text-gray-500 capitalize">First Pull Request</p>
         <a
           href={firstPullRequestContribution.pullRequest.url}
-          className="text-blue-600 visited:text-green-600"
+          target="_blank"
+          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
         >
           {firstPullRequestContribution.pullRequest.title}
+          <OutBoundSvgIcon />
         </a>
       </div>
-      <div className="text-xs sm:text-base px-3 sm:px-4 border-r">
-        <p className="text-[10px] sm:text-xs text-gray-500">on </p>
+      <div className="px-3 sm:px-4">
+        <p className=" text-gray-500">on </p>
         <p>{firstIssueCreateDate}</p>
       </div>
-      <div className="text-xs sm:text-base px-3 sm:px-4 border-l">
-        <p className="text-[10px] sm:text-xs text-gray-500">for</p>
+      <div className="px-3 sm:px-4">
+        <p className=" text-gray-500">for</p>
 
         <a
           href={firstPullRequestContribution.pullRequest.repository.url}
-          className="text-blue-600 visited:text-green-600"
+          target="_blank"
+          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
         >
           {firstPullRequestContribution.pullRequest.repository.name}
+          <OutBoundSvgIcon />
         </a>
       </div>
     </div>
@@ -130,29 +158,31 @@ async function FirstIssue() {
     .slice(0, 10);
   return (
     <div className="flex justify-center text-center my-4">
-      <div className="text-xs sm:text-base pr-3 sm:px-4 border-r">
-        <p className="text-[10px] sm:text-xs text-gray-500">
-          First issue on Github
-        </p>
+      <div className="pr-3 sm:px-4">
+        <p className=" text-gray-500 capitalize">First issue</p>
         <a
           href={firstIssueContribution.issue.url}
-          className="text-blue-600 visited:text-green-600"
+          target="_blank"
+          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline truncate"
         >
           {firstIssueContribution.issue.title}
+          <OutBoundSvgIcon />
         </a>
       </div>
-      <div className="text-xs sm:text-base px-3 sm:px-4 border-r">
-        <p className="text-[10px] sm:text-xs text-gray-500">on </p>
+      <div className="px-3 sm:px-4">
+        <p className=" text-gray-500">on </p>
         <p>{firstIssueCreateDate}</p>
       </div>
-      <div className="text-xs sm:text-base px-3 sm:px-4 border-l">
-        <p className="text-[10px] sm:text-xs text-gray-500">for</p>
+      <div className="px-3 sm:px-4">
+        <p className=" text-gray-500">for</p>
 
         <a
           href={firstIssueContribution.issue.repository.url}
-          className="text-blue-600 visited:text-green-600"
+          target="_blank"
+          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline truncate"
         >
           {firstIssueContribution.issue.repository.name}
+          <OutBoundSvgIcon />
         </a>
       </div>
     </div>
@@ -164,21 +194,28 @@ async function Profile() {
   const username = summary.data.user.name;
   const profileUrl = summary.data.user.url;
   return (
-    <div className="flex flex-row">
-      <div className="">
-        <div>
-          <img
-            src={avatarUrl}
-            className="rounded-full h-10 w-10 sm:h-20 sm:w-20"
-          />
+    <div className="flex  items-start">
+      <div className="flex flex-row w-3/4">
+        <div className="px-2">
+          <img src={avatarUrl} className="h-10 w-10 sm:h-20 sm:w-20" />
         </div>
-        <div>
-          <p className="font-bold mt-2 text-xs sm:text-lg">{username}</p>
-          <p className="text-xs sm:text-sm">{profileUrl}</p>
+        <div className="flex flex-col">
+          <p className="font-bold pb-1 text-xs sm:text-lg">{username}</p>
+          <a
+            href={profileUrl}
+            target="_blank"
+            className="inline-flex items-center font-medium text-gray-600 hover:underline"
+          >
+            {profileUrl}
+
+            <OutBoundSvgIcon />
+          </a>
         </div>
       </div>
-      <div className="mt-4 text-gray-500 text-right text-[7px] sm:text-[10px]">
-        Get yours <br />
+      <div className="flex flex-col justify-end text-gray-500 text-xs">
+        <div className="pb-1">
+            Get your summary <br />
+        </div>
         <span className="text-foreground">github-worth.vercel.app</span>
       </div>
     </div>
@@ -189,8 +226,6 @@ export default async function Home() {
   // let labels = await fetchContributionSummaryByYear();
   const summary = await fetchContributionSummary("ramsayleung");
   const contributionsCollection = summary.data.user.contributionsCollection;
-  const avatarUrl = summary.data.user.avatarUrl;
-  const username = summary.data.user.name;
   const popularPullRequestContribution =
     contributionsCollection.popularPullRequestContribution;
   const popularIssueContribution =
@@ -204,69 +239,64 @@ export default async function Home() {
   const totalPullRequestContributions =
     contributionsCollection.totalPullRequestContributions;
 
-  // const labels = [
-  //   "January",
-  //   "February",
-  //   "March",
-  //   "April",
-  //   "May",
-  //   "June",
-  //   "July",
-  // ];
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-white">
-      <div className="p-4 border mt-8 rounded w-full flex flex-col dark:bg-background">
+    <div className="flex flex-col p-24 items-center justify-center w-full bg-white">
+      <div className="flex flex-col p-4 border mt-8 rounded">
         <Profile />
         <div className="flex flex-col p-4 border mt-8 rounded">
           <FirstRepository />
           <FirstIssue />
           <FirstPullRequest />
-          <SummaryLineChart/>
+          <SummaryLineChart />
         </div>
-      </div>
       <div className="flex flex-col p-4 border mt-8 rounded">
         <div className="flex justify-center text-center my-4">
-          <div className=" flex-none text-xs sm:text-base pr-3 sm:px-4 border-r">
-            <p className="text-[10px] sm:text-xs text-gray-500">
+          <div className="flex-none pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">
               Most popular issue contribution
             </p>
             <a
               href={popularIssueContribution.issue.url}
-              className="text-blue-600 visited:text-green-600"
+              target="_blank"
+              className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
             >
               {popularIssueContribution.issue.title}
+
+              <OutBoundSvgIcon />
             </a>
           </div>
-          <div className="text-xs sm:text-base px-3 sm:px-4 border-r">
-            <p className="text-[10px] sm:text-xs text-gray-500">comments</p>
+          <div className="px-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">comments</p>
             <p>{popularIssueContribution.issue.comments.totalCount}</p>
           </div>
-          <div className="text-xs sm:text-base px-3 sm:px-4 border-l">
-            <p className="text-[10px] sm:text-xs text-gray-500">participants</p>
+          <div className="px-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">participants</p>
             <p>{popularIssueContribution.issue.participants.totalCount}</p>
           </div>
         </div>
 
         <div className="flex justify-center text-center my-4">
-          <div className="text-xs sm:text-base pr-3 sm:px-4 border-r">
-            <p className="text-[10px] sm:text-xs text-gray-500">
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">
               Most popular pull request contribution
             </p>
             <a
               href={popularPullRequestContribution.pullRequest.url}
-              className="text-blue-600 visited:text-green-600"
+              target="_blank"
+              className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
             >
               {popularPullRequestContribution.pullRequest.title}
+              <OutBoundSvgIcon />
             </a>
           </div>
-          <div className="text-xs sm:text-base px-3 sm:px-4 border-r">
-            <p className="text-[10px] sm:text-xs text-gray-500">comments</p>
+          <div className="px-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">comments</p>
             <p>
               {popularPullRequestContribution.pullRequest.comments.totalCount}
             </p>
           </div>
-          <div className="text-xs sm:text-base px-3 sm:px-4 border-l">
-            <p className="text-[10px] sm:text-xs text-gray-500">participants</p>
+          <div className="px-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">participants</p>
             <p>
               {
                 popularPullRequestContribution.pullRequest.participants
@@ -277,19 +307,21 @@ export default async function Home() {
         </div>
 
         <div className="flex justify-center text-center my-4">
-          <div className="text-xs sm:text-base pr-3 sm:px-4 border-r">
-            <p className="text-[10px] sm:text-xs text-gray-500">Total issues</p>
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Commits</p>
+            <p>{totalCommitContributions}</p>
+          </div>
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">issues</p>
             <p>{totalIssueContributions}</p>
           </div>
-          <div className="text-xs sm:text-base px-3 sm:px-4 border-r">
-            <p className="text-[10px] sm:text-xs text-gray-500">
-              Total Pull Requests
-            </p>
+          <div className="px-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Pull Requests</p>
             <p>{totalPullRequestContributions}</p>
           </div>
-          <div className="text-xs sm:text-base pl-3 sm:px-4 border-l">
-            <p className="text-[10px] sm:text-xs text-gray-500">
-              Total contributed repositories
+          <div className="pl-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">
+              contributed repositories
             </p>
             <p>{totalRepositoryContributions}</p>
           </div>
@@ -300,13 +332,18 @@ export default async function Home() {
           alt="Name Your Github chart"
         />
       </div>
-      <div>
-        Created By{" "}
-        <a href="https://twitter.com/foobar_ramsay" className="text-gray-500">
-          @ramsayleung{" "}
+      <div className="flex justify-center pt-2">
+        Created by &nbsp;
+        <a
+          href="https://twitter.com/foobar_ramsay"
+          target="_blank"
+          className="inline-flex items-center font-medium text-gray-600 dark:text-blue-500 hover:underline"
+        >
+          @ramsayleung&nbsp;
         </a>
-        with love
+        with ❤️
       </div>
-    </main>
+    </div>
+      </div>
   );
 }
