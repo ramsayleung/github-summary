@@ -71,7 +71,6 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
     userName: userName,
     from: getFirstDayOfYear(from)
   }
-  console.log(`fetchContributionSummary: ${JSON.stringify(variables)}`)
 
   return callGithubGraphqlAPI(query, variables)
 }

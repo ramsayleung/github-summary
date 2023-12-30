@@ -42,16 +42,6 @@ const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestRevi
     },
   };
 
-//   const labels = [
-//     "January",
-//     "February",
-//     "March",
-//     "April",
-//     "May",
-//     "June",
-//     "July",
-//   ];
-
   const data = {
     labels,
     datasets: [
@@ -61,6 +51,7 @@ const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestRevi
         borderColor: "rgb(119, 197, 230)",
         backgroundColor: "rgba(119, 197, 230, 0.5)",
         yAxisID: "y",
+        pointStyle: 'rectRounded',
       },
       {
         label: "Issues",
@@ -68,6 +59,7 @@ const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestRevi
         borderColor: "rgb(217, 119, 230)",
         backgroundColor: "rgba(217, 119, 230, 0.5)",
         yAxisID: "y",
+        pointStyle: 'rectRounded',
       },
       {
         label: "PRs",
@@ -75,6 +67,7 @@ const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestRevi
         yAxisID: "y",
         borderColor: "rgb(119, 230, 167)",
         backgroundColor: "rgba(119, 230, 167, 0.5)",
+        pointStyle: 'rectRounded',
       },
       {
         label: "PR Reviews",
@@ -82,6 +75,7 @@ const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestRevi
         borderColor: "rgb(119, 230, 167)",
         backgroundColor: "rgba(119, 230, 167, 0.5)",
         yAxisID: "y",
+        pointStyle: 'rectRounded',
       },
     ],
   };
