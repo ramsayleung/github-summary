@@ -17,6 +17,7 @@ import { FirstContribution } from "@/components/FirstContribution";
 import { LoadingPage } from "@/components/Loading";
 import { UserNotExist } from "@/components/ErrorPage";
 import { drawContributions } from "github-contributions-canvas";
+import html2canvas from "html2canvas";
 
 export interface QueryProps {
   username: string;
@@ -82,7 +83,7 @@ export function StatsPage({
   firstIssueContribution,
   firstRepositoryContribution,
   selectedYear,
-  contributionGraphData
+  contributionGraphData,
 }: StatsPageProps) {
   const avatarUrl = summary.data.user.avatarUrl;
   const profileUrl = summary.data.user.url;
@@ -119,16 +120,16 @@ export function StatsPage({
   const totalPullRequestContributions =
     contributionsCollection.totalPullRequestContributions;
 
-  let canvasEl = document.createElement('canvas');;
+  let canvasEl = document.createElement("canvas");
   drawContributions(canvasEl, {
     data: contributionGraphData,
     username: username,
     themeName: "standard",
     skipHeader: true,
-    skipAxisLabel: false
+    skipAxisLabel: false,
   });
   canvasEl.scrollIntoView({
-    behavior: "smooth"
+    behavior: "smooth",
   });
 
   return (
@@ -141,7 +142,9 @@ export function StatsPage({
 
       <div className="flex flex-col p-4 border mt-8 rounded">
         <div className="flex justify-center">
-          <p className="text-2xl font-semibold text-gray-600	capitalize">Rewind your</p>
+          <p className="text-2xl font-semibold text-gray-600	capitalize">
+            Rewind your
+          </p>
           <p className="text-2xl font-semibold text-emerald-600	">
             &nbsp; {selectedYear} &nbsp;
           </p>
@@ -277,6 +280,20 @@ export function StatsPage({
   );
 }
 
+export function download(canvas) {
+  try {
+    const dataUrl = canvas.toDataURL();
+    const a = document.createElement("a");
+    document.body.insertAdjacentElement("beforeend", a);
+    a.download = "contributions.png";
+    a.href = dataUrl;
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 interface StateProps {
   summary: any;
   summaryByYear: any;
@@ -309,13 +326,13 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      if(username !== "" && !userNotExist){
+      if (username !== "" && !userNotExist) {
         let props = await fetchRequiredData();
         setUserData(props);
       }
     }
     fetchData();
-  }, [selectedYear])
+  }, [selectedYear]);
 
   const fetchRequiredData = async (): StateProps => {
     const fromDate =
@@ -325,7 +342,10 @@ export default function Home() {
 
     const starCount = await getStarsCount(username);
 
-    const contributionGraphData = await fetchContributionGraphData(username, fromDate.getFullYear())
+    const contributionGraphData = await fetchContributionGraphData(
+      username,
+      fromDate.getFullYear()
+    );
 
     const contributionYears =
       summary.data.user.contributionsCollection.contributionYears;
@@ -440,13 +460,19 @@ export default function Home() {
             Travel
           </button>
         </div>
-
       </div>
-      {!userNotExist && userData?.summary && contributionYears && contributionYears.length > 0 && (
+      {!userNotExist &&
+        userData?.summary &&
+        contributionYears &&
+        contributionYears.length > 0 && (
           <div className="flex flex-row justify-center pt-4">
             <h2 className="text-base">Travel back to: </h2>
             <label>
-              <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mx-2" value={selectedYear} onChange={handleSelectChange}>
+              <select
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mx-2"
+                value={selectedYear}
+                onChange={handleSelectChange}
+              >
                 <option value="">Select a year</option>
                 {contributionYears.map((year) => (
                   <option key={year} value={year}>
@@ -461,8 +487,11 @@ export default function Home() {
 
       {userNotExist && <UserNotExist />}
 
-      <div className="flex flex-col p-4 items-center justify-center w-full bg-white">
-        {userData?.summary && userData?.summaryByYear && (
+      {userData?.summary && userData?.summaryByYear && (
+        <div
+          id="capture"
+          className="flex flex-col p-4 items-center justify-center w-full bg-white"
+        >
           <StatsPage
             username={userData.username}
             starCount={userData.starCount}
@@ -474,9 +503,43 @@ export default function Home() {
             selectedYear={selectedYear}
             contributionGraphData={userData.contributionGraphData}
           />
-        )}
-      </div>
-      <div className="flex justify-center pt-2">
+        </div>
+      )}
+
+      {userData?.summary && (
+        <div className="flex flex-row">
+          <button
+            className="flex text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+            onClick={() => {
+              html2canvas(document.querySelector("#capture")).then((canvas) => {
+                download(canvas);
+              });
+            }}
+          >
+            <svg
+              className="pr-1"
+              stroke="currentColor"
+              fill="none"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              height="18"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <desc></desc>
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+              <polyline points="7 11 12 16 17 11"></polyline>
+              <line x1="12" y1="4" x2="12" y2="16"></line>
+            </svg>
+            Download Image
+          </button>
+        </div>
+      )}
+
+      <div className="flex justify-center pt-5">
         Created by &nbsp;
         <a
           href="https://twitter.com/foobar_ramsay"
