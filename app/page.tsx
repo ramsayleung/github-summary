@@ -1,20 +1,22 @@
 "use client";
 import {
+  fetchContributionGraphData,
   fetchContributionSummary,
   fetchFirstIssueContribution,
   fetchFirstPullRequestContribution,
   fetchFirstRepositoryContribution,
   fetchSummaryByYear,
+  getStarsCount,
 } from "@/src/github_api";
 import CustomLineChart from "@/components/CustomLineChart";
-import { OutBoundSvgIcon } from "@/components/OutboundSvgIcon";
 import { Profile } from "@/components/Profile";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ContributionType } from "@/src/model";
 import { PopluarContribution } from "@/components/PopularContribution";
 import { FirstContribution } from "@/components/FirstContribution";
 import { LoadingPage } from "@/components/Loading";
 import { UserNotExist } from "@/components/ErrorPage";
+import { drawContributions } from "github-contributions-canvas";
 
 export interface QueryProps {
   username: string;
@@ -23,21 +25,8 @@ export interface QueryProps {
 interface SummaryLineChartProps {
   summaryByYear: any;
 }
+
 function SummaryLineChart({ summaryByYear }: SummaryLineChartProps) {
-  // var summaryByYear = await Promise.all(
-  //   contributionYears.map(async (year: String) => {
-  //     let firstDayOfYear = new Date(`${year}-1-1`);
-  //     const eachSummary = await fetchContributionSummary(
-  //       username,
-  //       firstDayOfYear
-  //     );
-  //     var obj = {};
-  //     obj[year] = eachSummary;
-  //     return obj;
-  //   })
-  // );
-  // // Convert an Array of Object into an Object
-  // summaryByYear = summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
   let labels = Object.keys(summaryByYear);
   let totalCommitContributions = Object.values(summaryByYear).map(
     (data) =>
@@ -57,6 +46,7 @@ function SummaryLineChart({ summaryByYear }: SummaryLineChartProps) {
       data?.data?.user?.contributionsCollection
         ?.totalPullRequestReviewContributions ?? 0
   );
+
   return (
     <div className="flex justify-center">
       <div className="basic-1/2 w-96">
@@ -78,25 +68,48 @@ interface StatsPageProps extends SummaryLineChartProps {
   firstRepositoryContribution: any;
   firstPullRequestContribution: any;
   firstIssueContribution: any;
+  starCount: number;
+  selectedYear: string;
+  contributionGraphData: any;
 }
 
 export function StatsPage({
   summary,
+  starCount,
   summaryByYear,
   username,
   firstPullRequestContribution,
   firstIssueContribution,
   firstRepositoryContribution,
+  selectedYear,
+  contributionGraphData
 }: StatsPageProps) {
   const avatarUrl = summary.data.user.avatarUrl;
   const profileUrl = summary.data.user.url;
   const githubUserName = summary.data.user.name;
   const contributionsCollection = summary.data.user.contributionsCollection;
+  const totalFollowersCount = summary.data.user.followers.totalCount;
+
+  const totalContributionsCount = Object.values(summaryByYear)
+    .map(
+      (data) =>
+        data?.data?.user?.contributionsCollection?.contributionCalendar
+          ?.totalContributions ?? 0
+    )
+    .reduce(
+      (totalCount, totalContributionsPerYear) =>
+        totalCount + totalContributionsPerYear,
+      0
+    );
+
   const contributionYears = contributionsCollection.contributionYears;
   const popularPullRequestContribution =
     contributionsCollection.popularPullRequestContribution;
   const popularIssueContribution =
     contributionsCollection.popularIssueContribution;
+
+  const totalContributions =
+    contributionsCollection.contributionCalendar.totalContributions;
   const totalIssueContributions =
     contributionsCollection.totalIssueContributions;
   const totalCommitContributions =
@@ -105,8 +118,19 @@ export function StatsPage({
     contributionsCollection.totalRepositoryContributions;
   const totalPullRequestContributions =
     contributionsCollection.totalPullRequestContributions;
-  const contributionGraphUrl = `https://ghchart.rshah.org/${username}`;
-  console.log(`JSON: ${JSON.stringify(firstIssueContribution)}`);
+
+  let canvasEl = document.createElement('canvas');;
+  drawContributions(canvasEl, {
+    data: contributionGraphData,
+    username: username,
+    themeName: "standard",
+    skipHeader: true,
+    skipAxisLabel: false
+  });
+  canvasEl.scrollIntoView({
+    behavior: "smooth"
+  });
+
   return (
     <div className="flex flex-col p-4 border mt-8 rounded">
       <Profile
@@ -114,7 +138,98 @@ export function StatsPage({
         avatarUrl={avatarUrl}
         profileUrl={profileUrl}
       />
+
       <div className="flex flex-col p-4 border mt-8 rounded">
+        <div className="flex justify-center">
+          <p className="text-2xl font-semibold text-gray-600	capitalize">Rewind your</p>
+          <p className="text-2xl font-semibold text-emerald-600	">
+            &nbsp; {selectedYear} &nbsp;
+          </p>
+          <p className="text-2xl font-semibold text-gray-600 capitalize">
+            in review
+          </p>
+        </div>
+        <div className="flex justify-center text-center my-4">
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Contributions</p>
+            <p>{totalContributions}</p>
+          </div>
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Commits</p>
+            <p>{totalCommitContributions}</p>
+          </div>
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">issues</p>
+            <p>{totalIssueContributions}</p>
+          </div>
+          <div className="px-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Pull Requests</p>
+            <p>{totalPullRequestContributions}</p>
+          </div>
+          <div className="pl-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">
+              contributed repositories
+            </p>
+            <p>{totalRepositoryContributions}</p>
+          </div>
+        </div>
+
+        {popularIssueContribution && (
+          <PopluarContribution
+            contributionTitle={popularIssueContribution.issue.title}
+            contributionUrl={popularIssueContribution.issue.url}
+            contributionType={ContributionType.Issue}
+            commentsCount={popularIssueContribution.issue.comments.totalCount}
+            participantsCount={
+              popularIssueContribution.issue.participants.totalCount
+            }
+          />
+        )}
+        {popularPullRequestContribution && (
+          <PopluarContribution
+            contributionTitle={popularPullRequestContribution.pullRequest.title}
+            contributionType={ContributionType.PullRequest}
+            contributionUrl={popularPullRequestContribution.pullRequest.url}
+            commentsCount={
+              popularPullRequestContribution.pullRequest.comments.totalCount
+            }
+            participantsCount={
+              popularPullRequestContribution.pullRequest.participants.totalCount
+            }
+          />
+        )}
+
+        <img src={canvasEl.toDataURL()} alt="Name Your Github chart" />
+      </div>
+
+      <div className="flex flex-col p-4 border mt-8 rounded">
+        <div className="flex justify-center">
+          <p className="text-2xl font-semibold text-black-500">
+            {" "}
+            You've contributed on Github for{" "}
+          </p>
+          <p className="text-2xl font-semibold text-emerald-600	">
+            {" "}
+            &nbsp;{contributionYears?.length ?? 0}&nbsp;
+          </p>
+          <p className="text-2xl font-semibold text-black-500"> years 🎉</p>
+        </div>
+
+        <div className="flex justify-center text-center my-4">
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Total stars</p>
+            <p>{starCount ?? 0}</p>
+          </div>
+
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Total followers</p>
+            <p>{totalFollowersCount ?? 0}</p>
+          </div>
+          <div className="pr-3 sm:px-4">
+            <p className=" text-gray-500 capitalize">Total Contributions</p>
+            <p>{totalContributionsCount ?? 0}</p>
+          </div>
+        </div>
         {firstRepositoryContribution &&
           firstRepositoryContribution?.repository && (
             <FirstContribution
@@ -158,58 +273,6 @@ export function StatsPage({
           )}
         <SummaryLineChart summaryByYear={summaryByYear} />
       </div>
-      <div className="flex flex-col p-4 border mt-8 rounded">
-        {popularIssueContribution && (
-          <PopluarContribution
-            contributionTitle={popularIssueContribution.issue.title}
-            contributionUrl={popularIssueContribution.issue.url}
-            contributionType={ContributionType.Issue}
-            commentsCount={popularIssueContribution.issue.comments.totalCount}
-            participantsCount={
-              popularIssueContribution.issue.participants.totalCount
-            }
-          />
-        )}
-        {popularPullRequestContribution && (
-          <PopluarContribution
-            contributionTitle={popularPullRequestContribution.pullRequest.title}
-            contributionType={ContributionType.PullRequest}
-            contributionUrl={popularPullRequestContribution.pullRequest.url}
-            commentsCount={
-              popularPullRequestContribution.pullRequest.comments.totalCount
-            }
-            participantsCount={
-              popularPullRequestContribution.pullRequest.participants.totalCount
-            }
-          />
-        )}
-
-        <div className="flex justify-center text-center my-4">
-          <div className="pr-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">Commits</p>
-            <p>{totalCommitContributions}</p>
-          </div>
-          <div className="pr-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">issues</p>
-            <p>{totalIssueContributions}</p>
-          </div>
-          <div className="px-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">Pull Requests</p>
-            <p>{totalPullRequestContributions}</p>
-          </div>
-          <div className="pl-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">
-              contributed repositories
-            </p>
-            <p>{totalRepositoryContributions}</p>
-          </div>
-        </div>
-
-        <img
-          src={contributionGraphUrl}
-          alt="Name Your Github chart"
-        />
-      </div>
     </div>
   );
 }
@@ -220,6 +283,9 @@ interface StateProps {
   firstPullRequestContribution: any;
   firstIssueContribution: any;
   firstRepositoryContribution: any;
+  starCount: number;
+  username: string;
+  contributionGraphData: any;
 }
 
 export default function Home() {
@@ -227,77 +293,116 @@ export default function Home() {
   // const username = "ramsayleung"
   const [username, setUsername] = useState("");
   const [userData, setUserData] = useState<StateProps>(null);
-  const [isLoading, setLoading] = useState(false)
-  const [userNotExist, setUserNotExist] = useState(false)
+  const [isLoading, setLoading] = useState(false);
+  const [userNotExist, setUserNotExist] = useState(false);
+
+  const [contributionYears, setContributionYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState("");
 
   const handleInputChange = (event) => {
     setUsername(event.target.value);
   };
 
+  const handleSelectChange = async (event) => {
+    setSelectedYear(event.target.value);
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      if(username !== "" && !userNotExist){
+        let props = await fetchRequiredData();
+        setUserData(props);
+      }
+    }
+    fetchData();
+  }, [selectedYear])
+
+  const fetchRequiredData = async (): StateProps => {
+    const fromDate =
+      selectedYear === "" ? new Date() : new Date(parseInt(selectedYear), 0, 1);
+
+    const summary = await fetchContributionSummary(username, fromDate);
+
+    const starCount = await getStarsCount(username);
+
+    const contributionGraphData = await fetchContributionGraphData(username, fromDate.getFullYear())
+
+    const contributionYears =
+      summary.data.user.contributionsCollection.contributionYears;
+    const summaryByYear = await fetchSummaryByYear(username, contributionYears);
+
+    setContributionYears(contributionYears);
+    if (selectedYear === "") {
+      setSelectedYear(contributionYears.length > 0 ? contributionYears[0] : "");
+    }
+
+    const firstPullRequest = await fetchFirstPullRequestContribution(
+      username,
+      contributionYears
+    );
+    const firstPullRequestContribution =
+      firstPullRequest?.data?.user?.contributionsCollection
+        ?.firstPullRequestContribution;
+    const firstIssue = await fetchFirstIssueContribution(
+      username,
+      contributionYears
+    );
+    const firstIssueContribution =
+      firstIssue?.data?.user?.contributionsCollection?.firstIssueContribution;
+
+    const firstRepository = await fetchFirstRepositoryContribution(
+      username,
+      contributionYears
+    );
+
+    const firstRepositoryContribution =
+      firstRepository?.data?.user?.contributionsCollection
+        ?.firstRepositoryContribution;
+
+    return {
+      summary: summary,
+      starCount: starCount,
+      summaryByYear: summaryByYear,
+      firstPullRequestContribution: firstPullRequestContribution,
+      firstIssueContribution: firstIssueContribution,
+      firstRepositoryContribution: firstRepositoryContribution,
+      username: username,
+      contributionGraphData: contributionGraphData,
+    };
+  };
+
   const handleButtonClick = async () => {
-    if(!userData){
-      setLoading(true)
+    setUserNotExist(false);
+    if (!userData) {
+      setLoading(true);
     }
     try {
       const response = await fetch(`https://api.github.com/users/${username}`)
-      .then(response => {
-        if(response.ok){
-          return response.json()
-        }else if(response.status === 404){
-          setUserNotExist(true)
-          console.log('404 error')
-          return Promise.reject('error 404')
-        }else{
-          return Promise.reject('some other error: ' + response.status)
-        }
-      }).then(data => {return data})
-      .catch(error => {throw error});
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else if (response.status === 404) {
+            setUserNotExist(true);
+            console.log("404 error");
+            return Promise.reject("error 404");
+          } else {
+            return Promise.reject("some other error: " + response.status);
+          }
+        })
+        .then((data) => {
+          return data;
+        })
+        .catch((error) => {
+          throw error;
+        });
 
-      const summary = await fetchContributionSummary(username);
-
-      const contributionYears =
-        summary.data.user.contributionsCollection.contributionYears;
-      const summaryByYear = await fetchSummaryByYear(
-        username,
-        contributionYears
-      );
-      const firstPullRequest = await fetchFirstPullRequestContribution(
-        username,
-        contributionYears
-      );
-      const firstPullRequestContribution =
-        firstPullRequest?.data?.user?.contributionsCollection
-          ?.firstPullRequestContribution;
-      const firstIssue = await fetchFirstIssueContribution(
-        username,
-        contributionYears
-      );
-      const firstIssueContribution =
-        firstIssue?.data?.user?.contributionsCollection?.firstIssueContribution;
-
-      const firstRepository = await fetchFirstRepositoryContribution(
-        username,
-        contributionYears
-      );
-
-      const firstRepositoryContribution =
-        firstRepository?.data?.user?.contributionsCollection
-          ?.firstRepositoryContribution;
-
-      let props: StateProps = {
-        summary: summary,
-        summaryByYear: summaryByYear,
-        firstPullRequestContribution: firstPullRequestContribution,
-        firstIssueContribution: firstIssueContribution,
-        firstRepositoryContribution: firstRepositoryContribution,
-      };
+      let props = await fetchRequiredData();
       setUserData(props);
       setLoading(false);
       setUserNotExist(false);
-      console.log(JSON.stringify(summary));
     } catch (error) {
       console.error("Error fetching GitHub data:", error);
-      setLoading(false)
+      setLoading(false);
       setUserData(null);
     }
   };
@@ -305,9 +410,11 @@ export default function Home() {
   return (
     <div className="flex flex-col p-24 items-center justify-center w-full h-full bg-white">
       <div>
-      <p className="text-3xl font-semibold pb-4 text-center">Github Summary Generator</p>
+        <p className="text-3xl font-semibold pb-4 text-center">
+          Github Time Machine
+        </p>
       </div>
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-row justify-center items-center">
         <div className="relative w-full py-2">
           <input
             type="text"
@@ -330,26 +437,42 @@ export default function Home() {
             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
             onClick={handleButtonClick}
           >
-            Generate
+            Travel
           </button>
         </div>
-      </div>
-      {isLoading &&(
-        <LoadingPage/>
-      )}
 
-      {userNotExist && (
-        <UserNotExist/>
-      )}
+      </div>
+      {!userNotExist && userData?.summary && contributionYears && contributionYears.length > 0 && (
+          <div className="flex flex-row justify-center pt-4">
+            <h2 className="text-base">Travel back to: </h2>
+            <label>
+              <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mx-2" value={selectedYear} onChange={handleSelectChange}>
+                <option value="">Select a year</option>
+                {contributionYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+      {isLoading && <LoadingPage />}
+
+      {userNotExist && <UserNotExist />}
+
       <div className="flex flex-col p-4 items-center justify-center w-full bg-white">
         {userData?.summary && userData?.summaryByYear && (
           <StatsPage
-            username={username}
+            username={userData.username}
+            starCount={userData.starCount}
             summary={userData.summary}
             summaryByYear={userData.summaryByYear}
             firstPullRequestContribution={userData.firstPullRequestContribution}
             firstIssueContribution={userData.firstIssueContribution}
             firstRepositoryContribution={userData.firstRepositoryContribution}
+            selectedYear={selectedYear}
+            contributionGraphData={userData.contributionGraphData}
           />
         )}
       </div>
