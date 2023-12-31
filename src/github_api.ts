@@ -1,27 +1,44 @@
-import { Octokit } from "octokit";
-const TOKEN = process.env.TOKEN
+const TOKEN = process.env.GITHUB_TOKEN
 export async function fetchCommitData(owner: String) {
 }
 
 function getFirstDayOfYear(date: Date) {
-  // Create a new Date object using the provided date
-  const firstDay = new Date(date);
-
-  // Set the month to January (0-indexed)
-  firstDay.setMonth(0);
-
-  // Set the day of the month to 1
-  firstDay.setDate(1);
-
-  firstDay.setHours(0);
-
-  firstDay.setMinutes(0);
-
-  firstDay.setSeconds(0);
-
+  const firstDay = new Date(date.getFullYear(), 0, 1);
   return firstDay;
 }
 
+export async function fetchContributionGraphData(username: string, targetYear: number){
+  const data = await fetch(`/api/v1/contributions?name=${username}`)
+  .then(response => response.json())
+
+  // Remove years that do not match the target year
+  data.years = data.years.filter(year => year.year === String(targetYear));
+
+  // Remove contributions that do not match the target year
+  data.contributions = data.contributions.filter(contribution => {
+    const contributionDate = new Date(contribution.date);
+    return contributionDate.getFullYear() === targetYear;
+  });
+  return data
+}
+
+export async function fetchSummaryByYear(username: string, contributionYears: string[]){
+  var summaryByYear = await Promise.all(
+    contributionYears.map(async (year: String) => {
+      let firstDayOfYear = new Date(`${year}-1-1`);
+      const eachSummary = await fetchContributionSummary(
+        username,
+        firstDayOfYear
+      );
+      var obj = {};
+      obj[year] = eachSummary;
+      return obj;
+    })
+  );
+  // Convert an Array of Object into an Object
+  summaryByYear = summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
+  return summaryByYear;
+}
 
 export async function fetchContributionSummary(userName: String, from: Date = new Date()) {
   const query = `
@@ -69,6 +86,7 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
         totalCommitContributions
         totalRepositoryContributions
         totalPullRequestContributions
+        totalPullRequestReviewContributions
       },
     }
   }`
