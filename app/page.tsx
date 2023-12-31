@@ -1,30 +1,43 @@
+"use client";
 import {
   fetchContributionSummary,
   fetchFirstIssueContribution,
   fetchFirstPullRequestContribution,
   fetchFirstRepositoryContribution,
+  fetchSummaryByYear,
 } from "@/src/github_api";
 import CustomLineChart from "@/components/CustomLineChart";
 import { OutBoundSvgIcon } from "@/components/OutboundSvgIcon";
+import { Profile } from "@/components/Profile";
+import { useState } from "react";
+import { ContributionType } from "@/src/model";
+import { PopluarContribution } from "@/components/PopularContribution";
+import { FirstContribution } from "@/components/FirstContribution";
+import { LoadingPage } from "@/components/Loading";
+import { UserNotExist } from "@/components/ErrorPage";
 
-async function SummaryLineChart() {
-  const summary = await fetchContributionSummary("ramsayleung");
-  const contributionsCollection = summary.data.user.contributionsCollection;
-  const contributionYears = contributionsCollection.contributionYears;
-  var summaryByYear = await Promise.all(
-    contributionYears.map(async (year: String) => {
-      let firstDayOfYear = new Date(`${year}-1-1`);
-      const eachSummary = await fetchContributionSummary(
-        "ramsayleung",
-        firstDayOfYear
-      );
-      var obj = {};
-      obj[year] = eachSummary;
-      return obj;
-    })
-  );
-  // Convert an Array of Object into an Object
-  summaryByYear = summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
+export interface QueryProps {
+  username: string;
+}
+
+interface SummaryLineChartProps {
+  summaryByYear: any;
+}
+function SummaryLineChart({ summaryByYear }: SummaryLineChartProps) {
+  // var summaryByYear = await Promise.all(
+  //   contributionYears.map(async (year: String) => {
+  //     let firstDayOfYear = new Date(`${year}-1-1`);
+  //     const eachSummary = await fetchContributionSummary(
+  //       username,
+  //       firstDayOfYear
+  //     );
+  //     var obj = {};
+  //     obj[year] = eachSummary;
+  //     return obj;
+  //   })
+  // );
+  // // Convert an Array of Object into an Object
+  // summaryByYear = summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
   let labels = Object.keys(summaryByYear);
   let totalCommitContributions = Object.values(summaryByYear).map(
     (data) =>
@@ -59,173 +72,27 @@ async function SummaryLineChart() {
   );
 }
 
-async function FirstRepository() {
-  const summary = await fetchContributionSummary("ramsayleung");
-  const contributionsCollection = summary.data.user.contributionsCollection;
-  const contributionYears = contributionsCollection.contributionYears;
-  const firstRepository = await fetchFirstRepositoryContribution(
-    "ramsayleung",
-    contributionYears
-  );
-
-  const firstRepositoryContribution =
-    firstRepository?.data?.user?.contributionsCollection
-      ?.firstRepositoryContribution;
-  const firstIssueCreateDate = new Date(firstRepositoryContribution.occurredAt)
-    .toISOString()
-    .slice(0, 10);
-  return (
-    <div className="flex justify-center text-center my-4">
-      <div className="pr-3 sm:px-4">
-        <p className=" text-gray-500 capitalize">First Repository</p>
-        <a
-          href={firstRepositoryContribution.repository.url}
-          target="_blank"
-          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
-        >
-          {firstRepositoryContribution.repository.name}
-          <OutBoundSvgIcon />
-        </a>
-      </div>
-      <div className="px-3 sm:px-4">
-        <p className="text-gray-500">on </p>
-        <p>{firstIssueCreateDate}</p>
-      </div>
-    </div>
-  );
+interface StatsPageProps extends SummaryLineChartProps {
+  summary: any;
+  username: string;
+  firstRepositoryContribution: any;
+  firstPullRequestContribution: any;
+  firstIssueContribution: any;
 }
 
-async function FirstPullRequest() {
-  const summary = await fetchContributionSummary("ramsayleung");
-  const contributionsCollection = summary.data.user.contributionsCollection;
-  const contributionYears = contributionsCollection.contributionYears;
-  const firstPullRequest = await fetchFirstPullRequestContribution(
-    "ramsayleung",
-    contributionYears
-  );
-  const firstPullRequestContribution =
-    firstPullRequest?.data?.user?.contributionsCollection
-      ?.firstPullRequestContribution;
-  const firstIssueCreateDate = new Date(
-    firstPullRequestContribution.pullRequest.createdAt
-  )
-    .toISOString()
-    .slice(0, 10);
-  return (
-    <div className="flex justify-center text-center my-4">
-      <div className="pr-3 sm:px-4">
-        <p className=" text-gray-500 capitalize">First Pull Request</p>
-        <a
-          href={firstPullRequestContribution.pullRequest.url}
-          target="_blank"
-          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
-        >
-          {firstPullRequestContribution.pullRequest.title}
-          <OutBoundSvgIcon />
-        </a>
-      </div>
-      <div className="px-3 sm:px-4">
-        <p className=" text-gray-500">on </p>
-        <p>{firstIssueCreateDate}</p>
-      </div>
-      <div className="px-3 sm:px-4">
-        <p className=" text-gray-500">for</p>
-
-        <a
-          href={firstPullRequestContribution.pullRequest.repository.url}
-          target="_blank"
-          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
-        >
-          {firstPullRequestContribution.pullRequest.repository.name}
-          <OutBoundSvgIcon />
-        </a>
-      </div>
-    </div>
-  );
-}
-async function FirstIssue() {
-  const summary = await fetchContributionSummary("ramsayleung");
-  const contributionsCollection = summary.data.user.contributionsCollection;
-  const contributionYears = contributionsCollection.contributionYears;
-  const firstIssue = await fetchFirstIssueContribution(
-    "ramsayleung",
-    contributionYears
-  );
-  const firstIssueContribution =
-    firstIssue?.data?.user?.contributionsCollection?.firstIssueContribution;
-  const firstIssueCreateDate = new Date(firstIssueContribution.issue.createdAt)
-    .toISOString()
-    .slice(0, 10);
-  return (
-    <div className="flex justify-center text-center my-4">
-      <div className="pr-3 sm:px-4">
-        <p className=" text-gray-500 capitalize">First issue</p>
-        <a
-          href={firstIssueContribution.issue.url}
-          target="_blank"
-          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline truncate"
-        >
-          {firstIssueContribution.issue.title}
-          <OutBoundSvgIcon />
-        </a>
-      </div>
-      <div className="px-3 sm:px-4">
-        <p className=" text-gray-500">on </p>
-        <p>{firstIssueCreateDate}</p>
-      </div>
-      <div className="px-3 sm:px-4">
-        <p className=" text-gray-500">for</p>
-
-        <a
-          href={firstIssueContribution.issue.repository.url}
-          target="_blank"
-          className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline truncate"
-        >
-          {firstIssueContribution.issue.repository.name}
-          <OutBoundSvgIcon />
-        </a>
-      </div>
-    </div>
-  );
-}
-async function Profile() {
-  const summary = await fetchContributionSummary("ramsayleung");
+export function StatsPage({
+  summary,
+  summaryByYear,
+  username,
+  firstPullRequestContribution,
+  firstIssueContribution,
+  firstRepositoryContribution,
+}: StatsPageProps) {
   const avatarUrl = summary.data.user.avatarUrl;
-  const username = summary.data.user.name;
   const profileUrl = summary.data.user.url;
-  return (
-    <div className="flex  items-start">
-      <div className="flex flex-row w-3/4">
-        <div className="px-2">
-          <img src={avatarUrl} className="h-10 w-10 sm:h-20 sm:w-20" />
-        </div>
-        <div className="flex flex-col">
-          <p className="font-bold pb-1 text-xs sm:text-lg">{username}</p>
-          <a
-            href={profileUrl}
-            target="_blank"
-            className="inline-flex items-center font-medium text-gray-600 hover:underline"
-          >
-            {profileUrl}
-
-            <OutBoundSvgIcon />
-          </a>
-        </div>
-      </div>
-      <div className="flex flex-col justify-end text-gray-500 text-xs">
-        <div className="pb-1">
-            Get your summary <br />
-        </div>
-        <span className="text-foreground">github-worth.vercel.app</span>
-      </div>
-    </div>
-  );
-}
-
-export default async function Home() {
-  // let labels = await fetchContributionSummaryByYear();
-  const summary = await fetchContributionSummary("ramsayleung");
+  const githubUserName = summary.data.user.name;
   const contributionsCollection = summary.data.user.contributionsCollection;
+  const contributionYears = contributionsCollection.contributionYears;
   const popularPullRequestContribution =
     contributionsCollection.popularPullRequestContribution;
   const popularIssueContribution =
@@ -238,73 +105,84 @@ export default async function Home() {
     contributionsCollection.totalRepositoryContributions;
   const totalPullRequestContributions =
     contributionsCollection.totalPullRequestContributions;
-
+  const contributionGraphUrl = `https://ghchart.rshah.org/${username}`;
+  console.log(`JSON: ${JSON.stringify(firstIssueContribution)}`);
   return (
-    <div className="flex flex-col p-24 items-center justify-center w-full bg-white">
+    <div className="flex flex-col p-4 border mt-8 rounded">
+      <Profile
+        username={githubUserName}
+        avatarUrl={avatarUrl}
+        profileUrl={profileUrl}
+      />
       <div className="flex flex-col p-4 border mt-8 rounded">
-        <Profile />
-        <div className="flex flex-col p-4 border mt-8 rounded">
-          <FirstRepository />
-          <FirstIssue />
-          <FirstPullRequest />
-          <SummaryLineChart />
-        </div>
-      <div className="flex flex-col p-4 border mt-8 rounded">
-        <div className="flex justify-center text-center my-4">
-          <div className="flex-none pr-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">
-              Most popular issue contribution
-            </p>
-            <a
-              href={popularIssueContribution.issue.url}
-              target="_blank"
-              className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
-            >
-              {popularIssueContribution.issue.title}
+        {firstRepositoryContribution &&
+          firstRepositoryContribution?.repository && (
+            <FirstContribution
+              contributionOccurredAt={firstRepositoryContribution.occurredAt}
+              contributionTitle={firstRepositoryContribution.repository.name}
+              contributionUrl={firstRepositoryContribution.repository.url}
+              contributionType={ContributionType.Repository}
+            />
+          )}
+        {firstIssueContribution && firstIssueContribution?.issue && (
+          <FirstContribution
+            contributionOccurredAt={firstIssueContribution.issue.createdAt}
+            contributionTitle={firstIssueContribution.issue.title}
+            contributionUrl={firstIssueContribution.issue.url}
+            contributedRepositoryUrl={
+              firstIssueContribution.issue.repository.url
+            }
+            contributedRepositoryName={
+              firstIssueContribution.issue.repository.name
+            }
+            contributionType={ContributionType.Issue}
+          />
+        )}
 
-              <OutBoundSvgIcon />
-            </a>
-          </div>
-          <div className="px-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">comments</p>
-            <p>{popularIssueContribution.issue.comments.totalCount}</p>
-          </div>
-          <div className="px-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">participants</p>
-            <p>{popularIssueContribution.issue.participants.totalCount}</p>
-          </div>
-        </div>
-
-        <div className="flex justify-center text-center my-4">
-          <div className="pr-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">
-              Most popular pull request contribution
-            </p>
-            <a
-              href={popularPullRequestContribution.pullRequest.url}
-              target="_blank"
-              className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline"
-            >
-              {popularPullRequestContribution.pullRequest.title}
-              <OutBoundSvgIcon />
-            </a>
-          </div>
-          <div className="px-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">comments</p>
-            <p>
-              {popularPullRequestContribution.pullRequest.comments.totalCount}
-            </p>
-          </div>
-          <div className="px-3 sm:px-4">
-            <p className=" text-gray-500 capitalize">participants</p>
-            <p>
-              {
-                popularPullRequestContribution.pullRequest.participants
-                  .totalCount
+        {firstPullRequestContribution &&
+          firstPullRequestContribution?.pullRequest && (
+            <FirstContribution
+              contributionOccurredAt={
+                firstPullRequestContribution.pullRequest.createdAt
               }
-            </p>
-          </div>
-        </div>
+              contributionTitle={firstPullRequestContribution.pullRequest.title}
+              contributionUrl={firstPullRequestContribution.pullRequest.url}
+              contributedRepositoryUrl={
+                firstPullRequestContribution.pullRequest.repository.url
+              }
+              contributedRepositoryName={
+                firstPullRequestContribution.pullRequest.repository.name
+              }
+              contributionType={ContributionType.PullRequest}
+            />
+          )}
+        <SummaryLineChart summaryByYear={summaryByYear} />
+      </div>
+      <div className="flex flex-col p-4 border mt-8 rounded">
+        {popularIssueContribution && (
+          <PopluarContribution
+            contributionTitle={popularIssueContribution.issue.title}
+            contributionUrl={popularIssueContribution.issue.url}
+            contributionType={ContributionType.Issue}
+            commentsCount={popularIssueContribution.issue.comments.totalCount}
+            participantsCount={
+              popularIssueContribution.issue.participants.totalCount
+            }
+          />
+        )}
+        {popularPullRequestContribution && (
+          <PopluarContribution
+            contributionTitle={popularPullRequestContribution.pullRequest.title}
+            contributionType={ContributionType.PullRequest}
+            contributionUrl={popularPullRequestContribution.pullRequest.url}
+            commentsCount={
+              popularPullRequestContribution.pullRequest.comments.totalCount
+            }
+            participantsCount={
+              popularPullRequestContribution.pullRequest.participants.totalCount
+            }
+          />
+        )}
 
         <div className="flex justify-center text-center my-4">
           <div className="pr-3 sm:px-4">
@@ -328,9 +206,152 @@ export default async function Home() {
         </div>
 
         <img
-          src="https://ghchart.rshah.org/ramsayleung"
+          src={contributionGraphUrl}
           alt="Name Your Github chart"
         />
+      </div>
+    </div>
+  );
+}
+
+interface StateProps {
+  summary: any;
+  summaryByYear: any;
+  firstPullRequestContribution: any;
+  firstIssueContribution: any;
+  firstRepositoryContribution: any;
+}
+
+export default function Home() {
+  // let labels = await fetchContributionSummaryByYear();
+  // const username = "ramsayleung"
+  const [username, setUsername] = useState("");
+  const [userData, setUserData] = useState<StateProps>(null);
+  const [isLoading, setLoading] = useState(false)
+  const [userNotExist, setUserNotExist] = useState(false)
+
+  const handleInputChange = (event) => {
+    setUsername(event.target.value);
+  };
+
+  const handleButtonClick = async () => {
+    if(!userData){
+      setLoading(true)
+    }
+    try {
+      const response = await fetch(`https://api.github.com/users/${username}`)
+      .then(response => {
+        if(response.ok){
+          return response.json()
+        }else if(response.status === 404){
+          setUserNotExist(true)
+          console.log('404 error')
+          return Promise.reject('error 404')
+        }else{
+          return Promise.reject('some other error: ' + response.status)
+        }
+      }).then(data => {return data})
+      .catch(error => {throw error});
+
+      const summary = await fetchContributionSummary(username);
+
+      const contributionYears =
+        summary.data.user.contributionsCollection.contributionYears;
+      const summaryByYear = await fetchSummaryByYear(
+        username,
+        contributionYears
+      );
+      const firstPullRequest = await fetchFirstPullRequestContribution(
+        username,
+        contributionYears
+      );
+      const firstPullRequestContribution =
+        firstPullRequest?.data?.user?.contributionsCollection
+          ?.firstPullRequestContribution;
+      const firstIssue = await fetchFirstIssueContribution(
+        username,
+        contributionYears
+      );
+      const firstIssueContribution =
+        firstIssue?.data?.user?.contributionsCollection?.firstIssueContribution;
+
+      const firstRepository = await fetchFirstRepositoryContribution(
+        username,
+        contributionYears
+      );
+
+      const firstRepositoryContribution =
+        firstRepository?.data?.user?.contributionsCollection
+          ?.firstRepositoryContribution;
+
+      let props: StateProps = {
+        summary: summary,
+        summaryByYear: summaryByYear,
+        firstPullRequestContribution: firstPullRequestContribution,
+        firstIssueContribution: firstIssueContribution,
+        firstRepositoryContribution: firstRepositoryContribution,
+      };
+      setUserData(props);
+      setLoading(false);
+      setUserNotExist(false);
+      console.log(JSON.stringify(summary));
+    } catch (error) {
+      console.error("Error fetching GitHub data:", error);
+      setLoading(false)
+      setUserData(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col p-24 items-center justify-center w-full h-full bg-white">
+      <div>
+      <p className="text-3xl font-semibold pb-4 text-center">Github Summary Generator</p>
+      </div>
+      <div className="flex flex-col justify-center items-center">
+        <div className="relative w-full py-2">
+          <input
+            type="text"
+            id="floating_outlined"
+            className="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border-1 border appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+            placeholder=" "
+            value={username}
+            onChange={handleInputChange}
+          />
+          <label
+            htmlFor="floating_outlined"
+            className="absolute text-base text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-background px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+          >
+            Github Username
+          </label>
+        </div>
+        <div className="px-2">
+          <button
+            type="button"
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+            onClick={handleButtonClick}
+          >
+            Generate
+          </button>
+        </div>
+      </div>
+      {isLoading &&(
+        <LoadingPage/>
+      )}
+
+      {userNotExist && (
+        <UserNotExist/>
+      )}
+      <div className="flex flex-col p-4 items-center justify-center w-full bg-white">
+        {userData?.summary && userData?.summaryByYear && (
+          <StatsPage
+            username={username}
+            summary={userData.summary}
+            summaryByYear={userData.summaryByYear}
+            firstPullRequestContribution={userData.firstPullRequestContribution}
+            firstIssueContribution={userData.firstIssueContribution}
+            firstRepositoryContribution={userData.firstRepositoryContribution}
+          />
+        )}
       </div>
       <div className="flex justify-center pt-2">
         Created by &nbsp;
@@ -344,6 +365,5 @@ export default async function Home() {
         with ❤️
       </div>
     </div>
-      </div>
   );
 }
