@@ -30,7 +30,13 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
       avatarUrl,
       name,
       url,
+      followers{
+        totalCount
+      },
       contributionsCollection(from: $from) {
+        contributionCalendar {
+          totalContributions
+        }
         contributionYears,
         popularIssueContribution {
           issue {
@@ -233,4 +239,35 @@ async function callGithubGraphqlAPI(query: String, variables: any) {
       console.error(e)
     });
   return result;
+}
+
+export async function getStarsCount(username: string){
+  let page = 1;
+  let allRepositories = [];
+
+  try {
+    while (true) {
+      const response = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=100`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user repositories. Status: ${response.status}`);
+      }
+
+      const repositories = await response.json();
+
+      if (repositories.length === 0) {
+        // No more repositories, break the loop
+        break;
+      }
+
+      allRepositories = allRepositories.concat(repositories);
+      page++;
+    }
+
+    // Calculate the total number of stars for user repositories
+    return allRepositories.reduce((totalStars, repo) => totalStars + repo.stargazers_count, 0);
+  } catch (error) {
+    console.error('Error fetching user repositories:', error.message);
+    return 0;
+  }
 }
