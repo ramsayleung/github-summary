@@ -72,8 +72,8 @@ const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestRevi
       {
         label: "PR Reviews",
         data: pullRequestReviews,
-        borderColor: "rgb(119, 230, 167)",
-        backgroundColor: "rgba(119, 230, 167, 0.5)",
+        borderColor: "rgb(230, 195, 119)",
+        backgroundColor: "rgba(230, 195, 119, 0.5)",
         yAxisID: "y",
         pointStyle: 'rectRounded',
       },
