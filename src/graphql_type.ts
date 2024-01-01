@@ -80,6 +80,7 @@ export interface PullRequestContribution{
 export interface IssueContribution{
     url: string
     issue: Issue
+    title: string
 }
 
 export interface Repository{

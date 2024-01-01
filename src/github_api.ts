@@ -60,6 +60,7 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
       popularIssueContribution {
         issue {
           url
+          title
           comments {
             totalCount
           }
