@@ -8,6 +8,7 @@ import {
   fetchSummaryByYear,
   getStarsCount,
 } from "@/src/github_api";
+
 import CustomLineChart from "@/components/CustomLineChart";
 import { Profile } from "@/components/Profile";
 import { useEffect, useState } from "react";
@@ -19,6 +20,8 @@ import { UserNotExist } from "@/components/ErrorPage";
 import { drawContributions } from "github-contributions-canvas";
 import html2canvas from "html2canvas";
 import { DownloadSvgIcon } from "@/components/DownloadSvgIcon";
+import { SocialNetworkIcon } from "@/components/SocialNetwork";
+import { Navbar } from "@/components/Navbar";
 
 export interface QueryProps {
   username: string;
@@ -458,7 +461,7 @@ export default function Home() {
           <div className="px-2">
             <button
               type="button"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+              className="text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
               onClick={handleButtonClick}
             >
               Travel
@@ -470,7 +473,7 @@ export default function Home() {
           contributionYears &&
           contributionYears.length > 0 && (
             <div className="flex flex-row justify-center pt-4">
-              <h2 className="text-base">Travel back to: </h2>
+              <h2 className="text-base underline decoration-wavy decoration-sky-500 decoration-2 underline-offset-1">Travel back to: </h2>
               <label>
                 <select
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mx-2"
@@ -530,16 +533,20 @@ export default function Home() {
           </div>
         )}
 
-        <div className="flex justify-center pt-5">
-          Created by &nbsp;
-          <a
-            href="https://twitter.com/foobar_ramsay"
-            target="_blank"
-            className="inline-flex items-center font-medium text-gray-600 dark:text-blue-500 hover:underline"
-          >
-            @ramsayleung&nbsp;
-          </a>
-          with ❤️
+        <div className="flex flex-col  pt-5">
+          <div className="flex justify-center font-medium text-gray-900">
+            Created by &nbsp;
+            <a
+              href="https://twitter.com/foobar_ramsay"
+              target="_blank"
+              className="inline-flex items-center  dark:text-blue-500 hover:underline"
+            >
+              @ramsayleung&nbsp;
+            </a>
+            with ❤️
+          </div>
+          
+          <SocialNetworkIcon/>
         </div>
       </div>
     </div>
