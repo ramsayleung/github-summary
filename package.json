@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^1.0.2",
     "chart.js": "^4.4.1",
     "github-contributions-canvas": "^0.7.0",
     "html2canvas": "^1.4.1",
