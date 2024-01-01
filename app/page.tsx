@@ -17,6 +17,12 @@ import { SocialNetworkIcon } from "@/components/SocialNetwork";
 import { StatisticsPage } from "@/components/StatisticsPage";
 import html2canvas from "html2canvas";
 import { useEffect, useState } from "react";
+import {
+  IssueContribution,
+  PullRequestContribution,
+  RepositoryContribution,
+  SummaryByYear,
+} from "@/src/graphql_type";
 
 interface QueryProps {
   username: string;
@@ -47,11 +53,65 @@ interface StateProps {
   contributionGraphData: any;
 }
 
+function findFirstIssueContribution(
+  userData: SummaryByYear
+): IssueContribution | null {
+  const issues = Object.values(userData)
+    .filter(
+      (response) =>
+        response &&
+        response.data &&
+        response.data.user &&
+        response.data.user.contributionsCollection &&
+        response.data.user.contributionsCollection.firstIssueContribution
+    )
+    .map(
+      (response) =>
+        response.data.user.contributionsCollection.firstIssueContribution
+    );
+
+  return issues.length > 0 ? issues[0] : null;
+}
+
+function findFirstPullRequestContribution(
+  summaryByYear: SummaryByYear
+): PullRequestContribution | null {
+  const pullRequests = Object.values(summaryByYear)
+    .filter(
+      (response) =>
+        response &&
+        response.data &&
+        response.data.user &&
+        response.data.user.contributionsCollection &&
+        response.data.user.contributionsCollection.firstPullRequestContribution
+    )
+    .map(
+      (response) =>
+        response.data.user.contributionsCollection.firstPullRequestContribution
+    );
+  return pullRequests.length > 0 ? pullRequests[0] : null;
+}
+
+function findFirstRepositoryContribution(summaryByYear: SummaryByYear): RepositoryContribution | null {
+  const repositories = Object.values(summaryByYear)
+  .filter(
+    (response) =>
+      response &&
+      response.data &&
+      response.data.user &&
+      response.data.user.contributionsCollection &&
+      response.data.user.contributionsCollection.firstRepositoryContribution
+  )
+  .map(
+    (response) =>
+      response.data.user.contributionsCollection.firstRepositoryContribution
+  );
+return repositories.length > 0 ? repositories[0] : null;
+}
+
 export default function Home() {
-  // let labels = await fetchContributionSummaryByYear();
-  // const username = "ramsayleung"
   const [username, setUsername] = useState("");
-  const [userData, setUserData] = useState<StateProps| null>(null);
+  const [userData, setUserData] = useState<StateProps | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [userNotExist, setUserNotExist] = useState(false);
 
@@ -62,7 +122,9 @@ export default function Home() {
     setUsername(event.target.value);
   };
 
-  const handleSelectChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectChange = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setSelectedYear(event.target.value);
   };
 
@@ -85,31 +147,14 @@ export default function Home() {
 
     setContributionYears(contributionYears);
     if (selectedYear === "") {
-      setSelectedYear(contributionYears.length > 0 ? contributionYears[0].toString() : "");
+      setSelectedYear(
+        contributionYears.length > 0 ? contributionYears[0].toString() : ""
+      );
     }
 
-    const firstPullRequest = await fetchFirstPullRequestContribution(
-      username,
-      contributionYears
-    );
-    const firstPullRequestContribution =
-      firstPullRequest?.data?.user?.contributionsCollection
-        ?.firstPullRequestContribution;
-    const firstIssue = await fetchFirstIssueContribution(
-      username,
-      contributionYears
-    );
-    const firstIssueContribution =
-      firstIssue?.data?.user?.contributionsCollection?.firstIssueContribution;
-
-    const firstRepository = await fetchFirstRepositoryContribution(
-      username,
-      contributionYears
-    );
-
-    const firstRepositoryContribution =
-      firstRepository?.data?.user?.contributionsCollection
-        ?.firstRepositoryContribution;
+    const firstPullRequestContribution = findFirstPullRequestContribution(summaryByYear)
+    const firstIssueContribution = findFirstIssueContribution(summaryByYear);
+    const firstRepositoryContribution = findFirstRepositoryContribution(summaryByYear);
 
     return {
       summary: summary,
@@ -130,8 +175,7 @@ export default function Home() {
       }
     }
     fetchData();
-  }, [selectedYear, userNotExist, username, fetchRequiredData]);
-
+  }, [selectedYear]);
 
   const handleButtonClick = async () => {
     setUserNotExist(false);
@@ -171,7 +215,7 @@ export default function Home() {
 
   return (
     <div>
-      <Navbar/>
+      <Navbar />
 
       <div className="flex flex-col p-24 items-center justify-center w-full h-full bg-white">
         <div>
@@ -211,7 +255,9 @@ export default function Home() {
           contributionYears &&
           contributionYears.length > 0 && (
             <div className="flex flex-row justify-center pt-4">
-              <h2 className="text-base underline decoration-wavy decoration-sky-500 decoration-2 underline-offset-1">Travel back to: </h2>
+              <h2 className="text-base underline decoration-wavy decoration-sky-500 decoration-2 underline-offset-1">
+                Travel back to:{" "}
+              </h2>
               <label>
                 <select
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 mx-2"
@@ -258,7 +304,7 @@ export default function Home() {
             <button
               className="flex text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
               onClick={() => {
-                html2canvas(document.getElementById('capture')!).then(
+                html2canvas(document.getElementById("capture")!).then(
                   (canvas) => {
                     download(canvas);
                   }
@@ -283,8 +329,8 @@ export default function Home() {
             </a>
             with ❤️
           </div>
-          
-          <SocialNetworkIcon/>
+
+          <SocialNetworkIcon />
         </div>
       </div>
     </div>

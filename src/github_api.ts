@@ -53,45 +53,83 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
         totalCount
       },
       contributionsCollection(from: $from) {
-        contributionCalendar {
-          totalContributions
+         contributionCalendar {
+        totalContributions
+      }
+      contributionYears
+      popularIssueContribution {
+        issue {
+          url
+          comments {
+            totalCount
+          }
+          participants {
+            totalCount
+          }
         }
-        contributionYears,
-        popularIssueContribution {
+      }
+      popularPullRequestContribution {
+        pullRequest {
+          url
+          title
+          comments {
+            totalCount
+          }
+          commits {
+            totalCount
+          }
+          participants {
+            totalCount
+          }
+        }
+      }
+      firstIssueContribution {
+        ... on CreatedIssueContribution {
+          url
           issue {
-            url,
-            title,
-            comments {
-              totalCount
-            }
-            participants {
-              totalCount
+            title
+            url
+            createdAt
+            repository {
+              name
+              url
             }
           }
         }
-        popularPullRequestContribution {
+      }
+      firstRepositoryContribution {
+        ... on CreatedRepositoryContribution {
+          url
+          occurredAt
+          repository {
+            name
+            url
+          }
+        }
+      }
+      firstPullRequestContribution {
+        ... on CreatedPullRequestContribution {
+          url
           pullRequest {
-            url,
-            title,
-            comments {
-              totalCount
-            }
-            commits {
-              totalCount
-            }
-            participants {
-              totalCount
+            createdAt
+            title
+            url
+            repository {
+              name
+              url
             }
           }
         }
-        totalIssueContributions
-        totalCommitContributions
-        totalRepositoryContributions
-        totalPullRequestContributions
-        totalPullRequestReviewContributions
+      }
+      totalCommitContributions
+      totalIssueContributions
+      totalPullRequestContributions
+      totalPullRequestReviewContributions
+      totalRepositoryContributions
       },
     }
-  }`
+  }
+  `
 
   const variables = {
     userName: userName,
@@ -99,147 +137,6 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
   }
 
   return callGithubGraphqlAPI(query, variables)
-}
-
-export async function fetchFirstIssueContribution(userName: string, contributionYears: number[]) {
-  let firstIssues = await Promise.all(
-    contributionYears.map(async (year: number) => {
-      const fromDate = new Date(`${year}-1-1`);
-      const query = `
-        query($userName: String!, $fromDate: DateTime!){
-          user(login: $userName) {
-            contributionsCollection(from: $fromDate) {
-              firstIssueContribution {
-                ... on CreatedIssueContribution {
-                  issue {
-                    title
-                    url,
-                    createdAt,
-                    repository{
-                      name,
-                      url
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `;
-
-      const variables = {
-        userName: userName,
-        fromDate: fromDate.toISOString(),
-      };
-
-      return callGithubGraphqlAPI(query, variables)
-    })
-  );
-
-  // If no non-null firstIssueContribution is found, return null or handle accordingly
-  let firstIssue = firstIssues.filter(
-    (response) =>
-      response &&
-      response.data &&
-      response.data.user &&
-      response.data.user.contributionsCollection &&
-      response.data.user.contributionsCollection.firstIssueContribution
-  );
-  return firstIssue[0]
-}
-
-
-export async function fetchFirstPullRequestContribution(userName: string, contributionYears: number[]): Promise<GraphQLResponse> {
-  let firstPullRequestContribution = await Promise.all(
-    contributionYears.map(async (year: number) => {
-      const fromDate = new Date(`${year}-1-1`);
-      const query = `
-        query($userName: String!, $fromDate: DateTime!){
-          user(login: $userName) {
-            contributionsCollection(from: $fromDate) {
-              firstPullRequestContribution {
-                ... on CreatedPullRequestContribution {
-                  url
-                  pullRequest{
-                    createdAt,
-                    title,
-                    url,
-                    repository{
-                      name,
-                      url
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `;
-
-      const variables = {
-        userName: userName,
-        fromDate: fromDate.toISOString(),
-      };
-
-      return callGithubGraphqlAPI(query, variables)
-    })
-  );
-
-  // If no non-null firstIssueContribution is found, return null or handle accordingly
-  let firstPullRequest = firstPullRequestContribution.filter(
-    (response) =>
-      response &&
-      response.data &&
-      response.data.user &&
-      response.data.user.contributionsCollection &&
-      response.data.user.contributionsCollection.firstPullRequestContribution
-  );
-  return firstPullRequest[0]
-}
-
-export async function fetchFirstRepositoryContribution(userName: string, contributionYears: number[]) : Promise<GraphQLResponse> {
-  let firstRepositoryContribution = await Promise.all(
-    contributionYears.map(async (year: number) => {
-      const fromDate = new Date(`${year}-1-1`);
-      const query = `
-        query($userName: String!, $fromDate: DateTime!){
-          user(login: $userName) {
-            contributionsCollection(from: $fromDate) {
-              firstRepositoryContribution {
-                ... on CreatedRepositoryContribution {
-                  url,
-                  occurredAt,
-                  repository{
-                    name,
-                    url
-                  }
-                }
-              }
-            }
-          }
-        }
-      `;
-
-      const variables = {
-        userName: userName,
-        fromDate: fromDate.toISOString(),
-      };
-
-      return callGithubGraphqlAPI(query, variables)
-    })
-  );
-
-  // If no non-null firstIssueContribution is found, return null or handle accordingly
-  let firstRepository = firstRepositoryContribution.filter(
-    (response: GraphQLResponse) =>
-      response &&
-      response.data &&
-      response.data.user &&
-      response.data.user.contributionsCollection &&
-      response.data.user.contributionsCollection.firstRepositoryContribution
-  );
-  
-  return firstRepository[0] 
 }
 
 async function callGithubGraphqlAPI(query: String, variables: any): Promise<GraphQLResponse> {
