@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# GitHub Summary Generator
+
+Takes the time machine back to the day since you have signed up, provides an detailed analysis summary for your contribution for every contribution year, so you can have an insight about your contribution on GitHub and share them in social media.
+
+The API for this project replies
+
+- mostly on [GitHub Official GraphQL API](https://docs.github.com/en/graphql)
+- a few on [GitHub Contribution Chart Generator](https://github.com/sallar/github-contributions-chart) to access user contribution graph
+- a few on [Github REST API](https://docs.github.com/en/rest)
 
 ## Getting Started
+
+### Requirements
+
+- A valid GitHub account
+
+### Development
+
+#### Prerequisite
+
+- A valid GitHub App Token
+
+Create a `.env.local` file in the root of the project, put your Github App Token
+
+```js
+GITHUB_TOKEN=your-github-app-token
+```
+
+#### How to run
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. This project is deployed on [Vercel](https://vercel.com/).
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Changelog
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Every release, along with the migration instructions, is documented on the GitHub [Releases]() page.
 
-## Deploy on Vercel
+## Acknowledge
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project is inspired by
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [GitHub Contribution Chart Generator](https://github.com/sallar/github-contributions-chart)
+- [Github Worth](https://github-worth.vercel.app/)
