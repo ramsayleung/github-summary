@@ -2,9 +2,6 @@
 import {
   fetchContributionGraphData,
   fetchContributionSummary,
-  fetchFirstIssueContribution,
-  fetchFirstPullRequestContribution,
-  fetchFirstRepositoryContribution,
   fetchSummaryByYear,
   getStarsCount,
 } from "@/src/github_api";

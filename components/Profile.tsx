@@ -29,7 +29,7 @@ export function Profile({avatarUrl, username, profileUrl}: ProfileProps) {
           <div className="pb-1">
               Get your summary <br />
           </div>
-          <span className="text-foreground">github-timemachine.vercel.app/</span>
+          <span className="text-foreground">github-summary.vercel.app/</span>
         </div>
       </div>
     );
