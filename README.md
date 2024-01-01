@@ -59,4 +59,4 @@ This project is inspired by
 - [GitHub Contribution Chart Generator](https://github.com/sallar/github-contributions-chart)
 - [Github Worth](https://github-worth.vercel.app/)
 
-[![Powered by Vercel](./public/vercel.svg)](https://vercel.com/?utm_source=github-summary&utm_campaign=oss)
+[![Powered by Vercel](./public/powered-by-vercel.svg)](https://vercel.com/?utm_source=github-summary&utm_campaign=oss)
