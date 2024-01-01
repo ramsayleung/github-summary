@@ -1,3 +1,6 @@
+import { GraphQLResponse, PullRequestContribution, RepositoryContribution } from "./graphql_type";
+import { ContributionGraphData, RepositoryDetail } from "./restapi_type";
+
 const TOKEN = process.env.GITHUB_TOKEN
 export async function fetchCommitData(owner: String) {
 }
@@ -7,8 +10,8 @@ function getFirstDayOfYear(date: Date) {
   return firstDay;
 }
 
-export async function fetchContributionGraphData(username: string, targetYear: number){
-  const data = await fetch(`/api/v1/contributions?name=${username}`)
+export async function fetchContributionGraphData(username: string, targetYear: number): Promise<ContributionGraphData>{
+  const data: ContributionGraphData = await fetch(`/api/v1/contributions?name=${username}`)
   .then(response => response.json())
 
   // Remove years that do not match the target year
@@ -22,25 +25,24 @@ export async function fetchContributionGraphData(username: string, targetYear: n
   return data
 }
 
-export async function fetchSummaryByYear(username: string, contributionYears: string[]){
+export async function fetchSummaryByYear(username: string, contributionYears: number[]): Promise<Record<number, GraphQLResponse>>{
   var summaryByYear = await Promise.all(
-    contributionYears.map(async (year: String) => {
+    contributionYears.map(async (year: number) => {
       let firstDayOfYear = new Date(`${year}-1-1`);
       const eachSummary = await fetchContributionSummary(
         username,
         firstDayOfYear
       );
-      var obj = {};
+      var obj: Record<number, GraphQLResponse> = {};
       obj[year] = eachSummary;
       return obj;
     })
   );
   // Convert an Array of Object into an Object
-  summaryByYear = summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
-  return summaryByYear;
+  return summaryByYear.reduce((acc, obj) => ({ ...acc, ...obj }), {});
 }
 
-export async function fetchContributionSummary(userName: String, from: Date = new Date()) {
+export async function fetchContributionSummary(userName: String, from: Date = new Date()): Promise<GraphQLResponse> {
   const query = `
   query($userName: String!, $from: DateTime!){
     user(login: $userName) {
@@ -99,9 +101,9 @@ export async function fetchContributionSummary(userName: String, from: Date = ne
   return callGithubGraphqlAPI(query, variables)
 }
 
-export async function fetchFirstIssueContribution(userName: string, contributionYears: string[]) {
+export async function fetchFirstIssueContribution(userName: string, contributionYears: number[]) {
   let firstIssues = await Promise.all(
-    contributionYears.map(async (year: string) => {
+    contributionYears.map(async (year: number) => {
       const fromDate = new Date(`${year}-1-1`);
       const query = `
         query($userName: String!, $fromDate: DateTime!){
@@ -147,9 +149,9 @@ export async function fetchFirstIssueContribution(userName: string, contribution
 }
 
 
-export async function fetchFirstPullRequestContribution(userName: string, contributionYears: string[]) {
+export async function fetchFirstPullRequestContribution(userName: string, contributionYears: number[]): Promise<GraphQLResponse> {
   let firstPullRequestContribution = await Promise.all(
-    contributionYears.map(async (year: string) => {
+    contributionYears.map(async (year: number) => {
       const fromDate = new Date(`${year}-1-1`);
       const query = `
         query($userName: String!, $fromDate: DateTime!){
@@ -195,9 +197,9 @@ export async function fetchFirstPullRequestContribution(userName: string, contri
   return firstPullRequest[0]
 }
 
-export async function fetchFirstRepositoryContribution(userName: string, contributionYears: string[]) {
+export async function fetchFirstRepositoryContribution(userName: string, contributionYears: number[]) : Promise<GraphQLResponse> {
   let firstRepositoryContribution = await Promise.all(
-    contributionYears.map(async (year: string) => {
+    contributionYears.map(async (year: number) => {
       const fromDate = new Date(`${year}-1-1`);
       const query = `
         query($userName: String!, $fromDate: DateTime!){
@@ -229,7 +231,7 @@ export async function fetchFirstRepositoryContribution(userName: string, contrib
 
   // If no non-null firstIssueContribution is found, return null or handle accordingly
   let firstRepository = firstRepositoryContribution.filter(
-    (response) =>
+    (response: GraphQLResponse) =>
       response &&
       response.data &&
       response.data.user &&
@@ -240,7 +242,7 @@ export async function fetchFirstRepositoryContribution(userName: string, contrib
   return firstRepository[0] 
 }
 
-async function callGithubGraphqlAPI(query: String, variables: any) {
+async function callGithubGraphqlAPI(query: String, variables: any): Promise<GraphQLResponse> {
   const result = await fetch('https://api.github.com/graphql', {
     method: 'post',
     headers: {
@@ -261,7 +263,7 @@ async function callGithubGraphqlAPI(query: String, variables: any) {
 
 export async function getStarsCount(username: string){
   let page = 1;
-  let allRepositories = [];
+  let allRepositories: RepositoryDetail[] = [];
 
   try {
     while (true) {
@@ -285,7 +287,7 @@ export async function getStarsCount(username: string){
     // Calculate the total number of stars for user repositories
     return allRepositories.reduce((totalStars, repo) => totalStars + repo.stargazers_count, 0);
   } catch (error) {
-    console.error('Error fetching user repositories:', error.message);
+    console.error('Error fetching user repositories:', error);
     return 0;
   }
 }

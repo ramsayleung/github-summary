@@ -19,7 +19,15 @@ ChartJS.register(
   Tooltip
 );
 
-const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestReviews}) => {
+export interface CustomLineChart{
+  labels: string[]
+  commits: number[]
+  issues: number[]
+  pullRequests: number[]
+  pullRequestReviews: number[]
+}
+
+const CustomLineChart = ({labels, commits, issues, pullRequests, pullRequestReviews}: CustomLineChart) => {
   const options = {
     responsive: true,
     interaction: {
