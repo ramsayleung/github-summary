@@ -1,4 +1,4 @@
-import { FirstContributionProps } from "@/src/model";
+import { FirstContributionProps } from "@/src/graphql_type";
 import { OutBoundSvgIcon } from "./OutboundSvgIcon";
 
 export function FirstContribution(contributionProps: FirstContributionProps) {

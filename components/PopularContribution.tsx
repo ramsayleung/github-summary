@@ -1,4 +1,4 @@
-import { PopularContributionProps } from "@/src/model";
+import { PopularContributionProps } from "@/src/graphql_type";
 import { OutBoundSvgIcon } from "./OutboundSvgIcon";
 
 export function PopluarContribution(popularContribution: PopularContributionProps){
