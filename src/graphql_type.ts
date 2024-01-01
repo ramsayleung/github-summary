@@ -1,4 +1,3 @@
-import exp from "constants";
 
 export enum ContributionType {
     Repository = "Repository",

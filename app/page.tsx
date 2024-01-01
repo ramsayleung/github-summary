@@ -9,20 +9,14 @@ import {
   getStarsCount,
 } from "@/src/github_api";
 
-import CustomLineChart from "@/components/CustomLineChart";
-import { Profile } from "@/components/Profile";
-import { useEffect, useState } from "react";
-import { ContributionType } from "@/src/graphql_type";
-import { PopluarContribution } from "@/components/PopularContribution";
-import { FirstContribution } from "@/components/FirstContribution";
-import { LoadingPage } from "@/components/Loading";
-import { UserNotExist } from "@/components/ErrorPage";
-import { drawContributions } from "github-contributions-canvas";
-import html2canvas from "html2canvas";
 import { DownloadSvgIcon } from "@/components/DownloadSvgIcon";
-import { SocialNetworkIcon } from "@/components/SocialNetwork";
+import { UserNotExist } from "@/components/ErrorPage";
+import { LoadingPage } from "@/components/Loading";
 import { Navbar } from "@/components/Navbar";
+import { SocialNetworkIcon } from "@/components/SocialNetwork";
 import { StatisticsPage } from "@/components/StatisticsPage";
+import html2canvas from "html2canvas";
+import { useEffect, useState } from "react";
 
 interface QueryProps {
   username: string;
