@@ -7,7 +7,7 @@ export function SocialNetworkIcon(){
             className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition p-1 rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700"
             target="_blank"
             rel="noopener"
-            href="https://facebook.com/sharer/sharer.php?u="
+            href="https://facebook.com/sharer/sharer.php?u=https://github-summary.vercel.app&quote=Generate%20your%20own%20GitHub%20Summary"
             aria-label="Share on Facebook"
           >
             <svg
@@ -25,7 +25,7 @@ export function SocialNetworkIcon(){
             className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition p-1 rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700"
             target="_blank"
             rel="noopener"
-            href="https://twitter.com/intent/tweet?url=&amp;text="
+            href="https://twitter.com/intent/tweet?url=https://github-summary.vercel.app&text=Rewind%20your%20GitHub%20summary%20in%20&hashtags=Github&via=foobar_ramsay"
             aria-label="Share on Twitter"
           >
             <svg
@@ -43,7 +43,7 @@ export function SocialNetworkIcon(){
             className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition p-1 rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700"
             target="_blank"
             rel="noopener"
-            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=&amp;title=&amp;summary=&amp;source="
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://github-summary.vercel.app&title=Generate%20your%20own%20GitHub%20Summary&summary=Take%20time%20machine%20to%20generate%20your%20own%20GitHub%20Summary%20on%20this%20fascinating%20website%20&source=github-summary.vercel.app"
             aria-label="Share on Linkedin"
           >
             <svg
@@ -61,7 +61,7 @@ export function SocialNetworkIcon(){
             className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition p-1 rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700"
             target="_blank"
             rel="noopener"
-            href="https://reddit.com/submit/?url=&amp;resubmit=true&amp;title="
+            href="https://reddit.com/submit/?url=https://github-timemachine.vercel.app/&resubmit=true&title=Generate%20your%20own%20GitHub%20Summary"
             aria-label="Share on Reddit"
             draggable="false"
           >
@@ -80,7 +80,7 @@ export function SocialNetworkIcon(){
             className="border-2 duration-200 ease inline-flex items-center mb-1 mr-1 transition p-1 rounded text-white border-blue-600 bg-blue-600 hover:bg-blue-700 hover:border-blue-700"
             target="_blank"
             rel="noopener"
-            href="https://news.ycombinator.com/submitlink?u=&amp;t="
+            href="https://news.ycombinator.com/submitlink?u=https://github-summary.vercel.app/&t=Generate%20your%20own%20GitHub%20Summary"
             aria-label="Share on Hacker News"
             draggable="false"
           >

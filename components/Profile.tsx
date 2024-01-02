@@ -10,7 +10,7 @@ export function Profile({avatarUrl, username, profileUrl}: ProfileProps) {
       <div className="flex  items-start">
         <div className="flex flex-row w-3/4">
           <div className="px-2">
-            <img src={avatarUrl} className="h-10 w-10 sm:h-20 sm:w-20" />
+            <img src={avatarUrl} alt="Github Avatar" className="h-10 w-10 sm:h-20 sm:w-20" />
           </div>
           <div className="flex flex-col">
             <p className="font-bold pb-1 text-xs sm:text-lg">{username}</p>
